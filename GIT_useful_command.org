@@ -1,0 +1,736 @@
+* #Move backword from commit
+#+BEGIN_SRC shell
+git reset --hard 14f58b
+git push --force origin master:dev-guo
+#+END_SRC
+
+* If you want to make that commit available on both branches you do
+#+BEGIN_SRC shell
+ git stash                    # remove all changes from HEAD and save them somewhere else
+ git checkout <other-project> # change branches
+ git cherry-pick <commit-id>  # pick a commit from ANY branch and apply it to the current
+ git checkout <first-project> # change to the other branch
+ git stash pop                # restore all changes again
+#+END_SRC
+
+
+* You commit only the changed files by:
+#+BEGIN_SRC shell
+git commit [some files]
+#+END_SRC
+
+* If you accidentally commit the wrong files
+#+BEGIN_SRC shell
+git reset --soft HEAD~1
+#+END_SRC
+
+* If you want to unstage the files and start over (un add)
+#+BEGIN_SRC shell
+git reset
+#+END_SRC
+
+* Question delete commit in the middle
+
+For example, in the following master branch, 
+I need to trash just the commit af5c7bf16e6f04321f966b4231371b21475bc4da, 
+which is the second due to previous rebase:
+
+** Question
+commit 60b413512e616997c8b929012cf9ca56bf5c9113
+Author: Luca G. Soave <luca.soave@gmail.com>
+Date:   Tue Apr 12 23:50:15 2011 +0200
+
+    add generic config/initializers/omniauth.example.rb
+
+commit af5c7bf16e6f04321f966b4231371b21475bc4da
+Author: Luca G. Soave <luca.soave@gmail.com>
+Date:   Fri Apr 22 00:15:50 2011 +0200
+
+    show github user info if logged
+
+commit e6523efada4d75084e81971c4dc2aec621d45530
+Author: Luca G. Soave <luca.soave@gmail.com>
+Date:   Fri Apr 22 17:20:48 2011 +0200
+
+    add multiple .container at blueprint layout
+
+commit 414ceffc40ea4ac36ca68e6dd0a9ee97e73dee22
+Author: Luca G. Soave <luca.soave@gmail.com>
+Date:   Thu Apr 21 19:55:57 2011 +0200
+
+
+I need to mantain
+
+the First commit 60b413512e616997c8b929012cf9ca56bf5c9113,
+the Third commit e6523efada4d75084e81971c4dc2aec621d45530 and
+the Last commit 414ceffc40ea4ac36ca68e6dd0a9ee97e73dee22
+"throwing away" just the Second commit af5c7bf16e6f04321f966b4231371b21475bc4da
+
+How can I do that? 
+
+
+
+** Answer
+
+Rebase or revert are the options. Rebase will actually remove the commit from the history 
+so it will look like that second commit never existed. This will be a problem if you've pushed the master branch out to any other repos. 
+If you try to push after a rebase in this case, git will give you a reject non fast-forward merges error.
+
+Revert is the correct solution when the branch has been shared with other repos. 
+git revert af5c7bf16 will make a new commit that simply reverses the changes that af5c7bf16 introduced. 
+This way the history is not rewritten, you maintain a clear record of the mistake, and other repos will accept the push.
+
+Here's a good way to erase: git rebase -i <commit>^ That takes you to the commit just before the one you want to remove. 
+The interactive editor will show you a list of all the commits back to that point. You can pick, squash, etc. 
+In this case remove the line for the commit you want to erase and save the file. Rebase will finish its work.
+
+
+
+
+* git log
+git log --graph --pretty=oneline --abbrev-commit --decorate
+
+* Show the branch history using git log branchName
+$ git log remotes/origin/dev
+
+* combine two in one
+If there are multiple commits, you can use git rebase -i to squash two commits into one.
+#+BEGIN_SRC shell
+git rebase -i [commit]^
+#+END_SRC
+
+
+	
+* revert from rebase:
+
+The easiest way would be to find the head commit of the branch as it was immediately before the rebase started in the reflog...
+#+BEGIN_SRC shell
+git reflog
+#+END_SRC
+
+and to reset the current branch to it (with the usual caveats about being absolutely sure before reseting with the --hard option).
+
+Suppose the old commit was HEAD@{5} in the ref log:
+#+BEGIN_SRC shell
+git reset --hard HEAD@{5}
+#+END_SRC
+
+* combine two commits into one
+If there are only two commits you want to merge, and they are the "most recent two", 
+the following commands can be used to combine the two commits into one:
+#+BEGIN_SRC shell
+git reset --soft "HEAD^"
+git commit --amend
+#+END_SRC
+
+* pick from another branch in to the working branch
+#+BEGIN_SRC shell
+ git checkout rel_2.3
+ git cherry-pick dev~2
+#+END_SRC
+
+
+* Adding git tags
+
+To create a tag on your current branch, run this:
+#+BEGIN_SRC 
+git tag <tagname>
+git push origin --tags or
+#+END_SRC
+	
+
+
+* check if the local has commits that remote doesn't:
+#+BEGIN_SRC shell
+git fetch remote
+git log --oneline --graph remote/master..master
+#+END_SRC
+
+
+
+
+
+* How to clone all remote branches in Git
+#+BEGIN_SRC shell
+git branch
+#+END_SRC
+
+#+BEGIN_SRC 
+ master
+#+END_SRC
+
+But there are other branches hiding in your repository! You can see these using the -a flag:
+#+BEGIN_SRC shell
+git branch -a
+#+END_SRC
+#+BEGIN_SRC
+master
+remotes/origin/HEAD
+remotes/origin/master
+remotes/origin/v1.0-stable
+remotes/origin/experimental
+#+END_SRC
+If you just want to take a quick peek at an upstream branch, you can check it out directly:
+#+BEGIN_SRC shell
+git checkout origin/experimental
+#+END_SRC
+
+But if you want to work on that branch, you'll need to create a local tracking branch:
+#+BEGIN_SRC shell
+git checkout -b experimental origin/experimental
+#+END_SRC
+
+
+Branch experimental set up to track remote branch experimental from origin.
+Switched to a new branch 'experimental'
+
+Now, if you look at your local branches, this is what you'll see:
+#+BEGIN_SRC 
+$ git branch
+* experimental
+  master
+#+END_SRC
+
+#+BEGIN_SRC 
+$ git remote add win32 git://example.com/users/joe/myproject-win32-port
+$ git branch -a
+* master
+  remotes/origin/HEAD
+  remotes/origin/master
+  remotes/origin/v1.0-stable
+  remotes/origin/experimental
+  remotes/win32/master
+  remotes/win32/new-widgets
+
+#+END_SRC
+
+
+
+* To restore all those deleted files in a folder enter the following command.
+#+BEGIN_SRC shell
+git ls-files -d | xargs git checkout --
+#+END_SRC
+
+* Reset or revert a specific file to a specific revision using Git?
+
+Assuming the commit you want is abcde:
+#+BEGIN_SRC 
+git checkout abcde file/to/restore
+#+END_SRC
+
+
+The git checkout man page gives more information.
+
+Note if you want to revert changes made to the files in commit abcde you have to pass the commit right before abcde. 
+You can use abcde~1 for this.
+
+As a side note, I've always been uncomfortable with this command because it's used for both ordinary things 
+(changing between branches) and unusual destructive things (discarding changes in the working directory).
+
+
+* To show the content of a particular commit
+#+BEGIN_SRC 
+git show <COMMIT>
+#+END_SRC
+
+* Reset local repository branch to be just like remote repository HEAD
+#+BEGIN_SRC 
+git fetch origin
+git reset --hard origin/master     (master or your own branch)
+#+END_SRC
+
+
+
+* Git Tags
+** Download a specific tag with Git:
+#+BEGIN_SRC shell
+git clone will give you the whole repository.
+#+END_SRC
+
+
+After the clone, you can list the tags with $ git tag -l and then checkout a specific tag:
+#+BEGIN_SRC shell
+git checkout tags/<tag_name>
+#+END_SRC
+
+Even better, checkout and create a branch (otherwise you will be on a branch named after the revision number of tag):
+#+BEGIN_SRC shell
+git checkout tags/<tag_name> -b <branch_name>
+#+END_SRC
+
+** Show all tags on current HEAD (or commit)
+#+BEGIN_SRC 
+git tag --points-at HEAD
+#+END_SRC
+
+
+
+
+* git bisect
+#+BEGIN_SRC 
+$ git bisect start
+#+END_SRC
+
+Once started, tell Git which commit is bad. Again, because this is typically your current
+version, you can simply default the revision to your current HEAD
+# Tell git the HEAD version is broken
+#+BEGIN_SRC 
+$ git bisect bad
+#+END_SRC
+
+
+Similarly, tell Git which version works:
+#+BEGIN_SRC 
+$ git bisect good v2.6.27
+#+END_SRC
+
+Bisecting: 3857 revisions left to test after this
+[cf2fa66055d718ae13e62451bb546505f63906a2] Merge branch 'for_linus'
+
+Suppose this version is good:
+#+BEGIN_SRC 
+$ git bisect good
+#+END_SRC
+
+
+After another good and bad answer:
+#+BEGIN_SRC 
+$ git bisect bad
+#+END_SRC
+
+
+Throughout the bisection process, Git maintains a log of your answers along with their
+commit IDs.
+#+BEGIN_SRC 
+$ git bisect log
+#+END_SRC
+
+#+BEGIN_SRC 
+$ git bisect reset
+#+END_SRC
+Switched to branch "master"
+
+
+
+
+
+
+* git delete branch
+delete the remote branch
+#+BEGIN_SRC 
+git push origin --delete ${branch} 
+#+END_SRC
+
+
+delete the local branch
+#+BEGIN_SRC 
+git branch --delete ${branch} 
+#+END_SRC
+
+
+
+
+* perform git on a directory
+#+BEGIN_SRC shell
+#!/bin/bash
+branch=$1
+
+for dir in `find ../ -name ".git"`; do
+    echo "Git deleting branch for $dir"
+    if [[ "${branch}" == "master" ]]; then
+        echo "master branch, can not delete!!!"
+        exit 1
+    else
+       #delete the remote branch
+       git --git-dir $dir push origin --delete ${branch} 
+       #delete the local branch
+       git --git-dir $dir branch --delete ${branch} 
+    fi
+done
+
+#+END_SRC
+
+
+
+
+
+* Rename the git branch
+
+
+Rename a local and remote branch in git
+
+If you have named a branch incorrectly AND 
+pushed this to the remote repository follow these steps before any other developers get a chance to 
+jump on you and give you shit for not correctly following naming conventions.
+
+1. Rename your local branch.
+If you are on the branch you want to rename: -m == --move
+#+BEGIN_SRC shell
+git branch -m new-name    
+#+END_SRC
+
+If you are on a different branch:
+#+BEGIN_SRC shell
+git branch -m old-name new-name
+#+END_SRC
+
+2. Delete the old-name remote branch and push the new-name local branch.
+#+BEGIN_SRC shell
+git push origin :old-name new-name
+#+END_SRC
+
+3. Reset the upstream branch for the new-name local branch.
+Switch to the branch and then: -u == ----set-upstream
+#+BEGIN_SRC shell
+git push origin -u new-name
+#+END_SRC
+
+
+
+
+
+* Export a Git branch (to zip)
+The beloved command:
+#+BEGIN_SRC 
+git archive --format zip --output /full/path/to/zipfile.zip master
+#+END_SRC
+
+
+
+
+* To see the git tree structure
+#+BEGIN_SRC shell
+git cat-file -p <commit>
+#+END_SRC
+
+To see the hash name
+#+BEGIN_SRC shell
+git rev-parse V1.0
+#+END_SRC
+== 6b608c1093943939ae78348117dd18b1ba151c6a==
+
+To list all the files #  -s is to make it display hash hex
+#+BEGIN_SRC shell
+git ls-files -s
+#+END_SRC
+
+== 100644 3b18e512dba79e4c8300dd08aeb37f8e728b8dad 0 hello.txt==
+
+To see the files on stage or index
+#+BEGIN_SRC shell
+git ls-files --stage
+#+END_SRC
+
+
+
+* Calculate an file for its SHA1 hash 
+#+BEGIN_SRC shell
+git hash-object data
+#+END_SRC
+==e476983f39f6e4f453f0fe4a859410f63b58b500==
+
+
+
+* if a file is renamed uing git mv stuff newstuff
+#+BEGIN_SRC shell
+# git log newstuff                         ----will only show the history after rename
+#+END_SRC
+
+To show all the history before and after rename use --follow
+#+BEGIN_SRC shell
+$ git log --follow newstuff
+#+END_SRC
+
+
+* To revert a particular commit
+#+BEGIN_SRC shell
+git revert <commit>
+#+END_SRC
+
+
+* commit all with message
+#+BEGIN_SRC shell
+git commit -a -m "Use American spellings"
+#+END_SRC
+
+
+
+
+* Replace a folder from maste or another branch (work) for example utils directory 
+#+BEGIN_SRC shell
+git rm -rf utils
+git checkout work
+git checkout master -- utils
+git commit -m "Adding 'utils' directory from 'master' branch."
+#+END_SRC
+
+
+
+* git log for current directory
+#+BEGIN_SRC shell
+git log --graph --abbrev-commit --decorate -- ./
+#+END_SRC
+
+
+* git log using format
+#+BEGIN_SRC shell
+git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+#+END_SRC
+
+** ========= git format color =======================
+normal
+black
+red
+green
+yellow
+blue
+magenta
+cyan
+white
+It can be combined with one of these attributes:
+
+bold
+dim
+ul
+blink
+reverse
+
+
+** ============================== git format format ===========================
+The placeholders are:
+
+'%H': commit hash
+
+'%h': abbreviated commit hash
+
+'%T': tree hash
+
+'%t': abbreviated tree hash
+
+'%P': parent hashes
+
+'%p': abbreviated parent hashes
+
+'%an': author name
+
+'%aN': author name (respecting .mailmap, see git-shortlog[1] or git-blame[1])
+
+'%ae': author email
+
+'%aE': author email (respecting .mailmap, see git-shortlog[1] or git-blame[1])
+
+'%ad': author date (format respects --date= option)
+
+'%aD': author date, RFC2822 style
+
+'%ar': author date, relative
+
+'%at': author date, UNIX timestamp
+
+'%ai': author date, ISO 8601-like format
+
+'%aI': author date, strict ISO 8601 format
+
+'%cn': committer name
+
+'%cN': committer name (respecting .mailmap, see git-shortlog[1] or git-blame[1])
+
+'%ce': committer email
+
+'%cE': committer email (respecting .mailmap, see git-shortlog[1] or git-blame[1])
+
+'%cd': committer date (format respects --date= option)
+
+'%cD': committer date, RFC2822 style
+
+'%cr': committer date, relative
+
+'%ct': committer date, UNIX timestamp
+
+'%ci': committer date, ISO 8601-like format
+
+'%cI': committer date, strict ISO 8601 format
+
+'%d': ref names, like the --decorate option of git-log[1]
+
+'%D': ref names without the " (", ")" wrapping.
+
+'%e': encoding
+
+'%s': subject
+
+'%f': sanitized subject line, suitable for a filename
+
+'%b': body
+
+'%B': raw body (unwrapped subject and body)
+
+'%N': commit notes
+
+'%GG': raw verification message from GPG for a signed commit
+
+'%G?': show "G" for a good (valid) signature, "B" for a bad signature, "U" for a good signature with unknown validity, "X" for a good signature that has expired, "Y" for a good signature made by an expired key, "R" for a good signature made by a revoked key, "E" if the signature cannot be checked (e.g. missing key) and "N" for no signature
+
+'%GS': show the name of the signer for a signed commit
+
+'%GK': show the key used to sign a signed commit
+
+'%gD': reflog selector, e.g., refs/stash@{1} or refs/stash@{2 minutes ago}; the format follows the rules described for the -g option. The portion before the @ is the refname as given on the command line (so git log -g refs/heads/master would yield refs/heads/master@{0}).
+
+'%gd': shortened reflog selector; same as %gD, but the refname portion is shortened for human readability (so refs/heads/master becomes just master).
+
+'%gn': reflog identity name
+
+'%gN': reflog identity name (respecting .mailmap, see git-shortlog[1] or git-blame[1])
+
+'%ge': reflog identity email
+
+'%gE': reflog identity email (respecting .mailmap, see git-shortlog[1] or git-blame[1])
+
+'%gs': reflog subject
+
+'%Cred': switch color to red
+
+'%Cgreen': switch color to green
+
+'%Cblue': switch color to blue
+
+'%Creset': reset color
+
+'%C(…​)': color specification, as described under Values in the "CONFIGURATION FILE" section of git-config[1]. By default, colors are shown only when enabled for log output (by color.diff, color.ui, or --color, and respecting the auto settings of the former if we are going to a terminal). %C(auto,…​) is accepted as a historical synonym for the default (e.g., %C(auto,red)). Specifying %C(always,…​) will show the colors even when color is not otherwise enabled (though consider just using `--color=always to enable color for the whole output, including this format and anything else git might color). auto alone (i.e. %C(auto)) will turn on auto coloring on the next placeholders until the color is switched again.
+
+'%m': left (<), right (>) or boundary (-) mark
+
+'%n': newline
+
+'%%': a raw '%'
+
+'%x00': print a byte from a hex code
+
+'%w([<w>[,<i1>[,<i2>]]])': switch line wrapping, like the -w option of git-shortlog[1].
+
+'%<(<N>[,trunc|ltrunc|mtrunc])': make the next placeholder take at least N columns, padding spaces on the right if necessary. Optionally truncate at the beginning (ltrunc), the middle (mtrunc) or the end (trunc) if the output is longer than N columns. Note that truncating only works correctly with N >= 2.
+
+'%<|(<N>)': make the next placeholder take at least until Nth columns, padding spaces on the right if necessary
+
+'%>(<N>)', '%>|(<N>)': similar to '%<(<N>)', '%<|(<N>)' respectively, but padding spaces on the left
+
+'%>>(<N>)', '%>>|(<N>)': similar to '%>(<N>)', '%>|(<N>)' respectively, except that if the next placeholder takes more spaces than given and there are spaces on its left, use those spaces
+
+'%><(<N>)', '%><|(<N>)': similar to '% <(<N>)', '%<|(<N>)' respectively, but padding both sides (i.e. the text is centered)
+
+%(trailers[:options]): display the trailers of the body as interpreted by git-interpret-trailers[1]. The trailers string may be followed by a colon and zero or more comma-separated options. If the only option is given, omit non-trailer lines from the trailer block. If the unfold option is given, behave as if interpret-trailer’s --unfold option was given. E.g., %(trailers:only,unfold) to do both.
+
+
+
+** git format auto color ====
+As of git 1.8.3 (May 24, 2013), you can use %C(auto) to decorate  %d in the format string of git log
+
+ * "git log --format" specifier learned %C(auto) token that tells Git
+   to use color when interpolating %d (decoration), %h (short commit
+   object name), etc. for terminal output.)
+   
+   
+   
+**   =================== Adding alias =========
+#+BEGIN_SRC shell
+git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+#+END_SRC
+
+
+
+
+
+* --------------------------------revert a specific file to previous commit --------------------------
+#+BEGIN_SRC shell
+git checkout <commit_hash> -- <file>
+#+END_SRC
+
+
+
+* ======================================   How to delete remotes/origin/{branch}? ============================================
+use: 
+
+#+BEGIN_SRC shell
+git remote prune origin
+#+END_SRC
+
+or use :
+
+#+BEGIN_SRC shell
+ git remote prune origin --dry-run to preview what branches will be removed.
+#+END_SRC
+
+As in git help remote
+
+prune
+Deletes all stale remote-tracking branches under . These stale branches have already been removed from the remote repository referenced by , 
+but are still locally available in "remotes/".
+With --dry-run option, report what branches will be pruned, but do not actually prune them.
+
+
+
+
+
+** ======For solving .gitignore file not ignore files =================
+
+When .gitignore file is not working (adding something into .gitignore file or removing something from .gitignore file), you can check the following tips:
+
+you must pay attention to the global gitignore file which sometimes may influence your gitignore.
+When you add something into .gitignore file, as the person who answered this question first:
+
+#+BEGIN_SRC shell
+git rm -r --cached .
+git add .
+git commit -m "fixed untracked files"  
+#+END_SRC
+When you remove something from .gitignore file.The above steps will not work for you. You can try this:
+#+BEGIN_SRC shell
+git add -f "filetype"
+git commit -m "Refresh removing filetype from .gitignore file."
+#+END_SRC
+the "filetype" means the file or filetype you want to remove from the .gitignore file. You want to make the filetype be tracked again.
+
+
+
+
+
+* ======================================   How to revert multiple git commits?   ============================
+
+#+BEGIN_SRC shell
+git revert --no-commit D
+git revert --no-commit C
+git revert --no-commit B
+git commit -m "the commit message"
+#+END_SRC
+
+or 
+#+BEGIN_SRC shell
+git revert --no-commit D C B   (if supported )
+#+END_SRC
+
+
+
+
+
+
+* ========================= Using git blame ==============================
+Using git blame
+Another tool you can use to help identify a particular commit is git blame. This command
+tells you who last modified each line of a file and which commit made the change.
+
+#+BEGIN_SRC shell
+git blame -L 35, init/version.c
+#+END_SRC
+
+
+
+
+* ====================== Undo a pushed merge with git ============================
+#+BEGIN_SRC shell
+git checkout master
+git log
+git revert -m 1 <merge-commit>
+#+END_SRC
+
+With ‘-m 1’ we tell git to revert to the first parent of the mergecommit on the master branch. -m 2 would specify to revert to the first parent on the develop branch where the merge came from initially.
