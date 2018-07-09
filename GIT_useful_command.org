@@ -641,14 +641,14 @@ git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Crese
 
 
 
-* --------------------------------revert a specific file to previous commit --------------------------
+* revert a specific file to previous commit 
 #+BEGIN_SRC shell
 git checkout <commit_hash> -- <file>
 #+END_SRC
 
 
 
-* ======================================   How to delete remotes/origin/{branch}? ============================================
+* How to delete remotes/origin/{branch}? 
 use: 
 
 #+BEGIN_SRC shell
@@ -695,7 +695,7 @@ the "filetype" means the file or filetype you want to remove from the .gitignore
 
 
 
-* ======================================   How to revert multiple git commits?   ============================
+* How to revert multiple git commits? 
 
 #+BEGIN_SRC shell
 git revert --no-commit D
@@ -714,7 +714,7 @@ git revert --no-commit D C B   (if supported )
 
 
 
-* ========================= Using git blame ==============================
+* Using git blame
 Using git blame
 Another tool you can use to help identify a particular commit is git blame. This command
 tells you who last modified each line of a file and which commit made the change.
@@ -726,7 +726,7 @@ git blame -L 35, init/version.c
 
 
 
-* ====================== Undo a pushed merge with git ============================
+*  Undo a pushed merge with git 
 #+BEGIN_SRC shell
 git checkout master
 git log
@@ -734,3 +734,19 @@ git revert -m 1 <merge-commit>
 #+END_SRC
 
 With ‘-m 1’ we tell git to revert to the first parent of the mergecommit on the master branch. -m 2 would specify to revert to the first parent on the develop branch where the merge came from initially.
+
+* Show the Change History of A file
+** To show only commits of an individual file, run this comamnds:
+#+BEGIN_SRC shell
+  git log -- <file>
+#+END_SRC
+
+** Run the below commands to show commits of the particular file with diffs for ecah chage
+#+BEGIN_SRC shell
+  git log -p -- <file>
+#+END_SRC
+
+** Show the entire history of a file 
+#+BEGIN_SRC shell
+  git log --follow -p -- file
+#+END_SRC
