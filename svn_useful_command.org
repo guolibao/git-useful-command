@@ -1,0 +1,22 @@
+* How to view changes made to files on a certain revision
+#+BEGIN_SRC shell
+svn diff -c <revision> path/to/repo
+#+END_SRC
+
+The =-c= indicates that you would like to look at a change set, but there
+are many othter ways you can look at diffs and changesets.
+
+For example, if you would like to know which files were changed (but not how),
+you can issue
+
+#+BEGIN_SRC shell
+svn log -v -r <revision>
+#+END_SRC
+
+here =-r= is revision, =-v= is verbose, so that which file is changed 
+can be seen, without =-v= only commit message can be seen.
+
+Or, if you would like to show at the changes between two revisions (and not just for one commit)
+#+BEGIN_SRC shell
+svn diff -r <revA>:<revB> path/to/repo
+#+END_SRC
