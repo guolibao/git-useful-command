@@ -1,6 +1,6 @@
 #+TITLE: git rebase
-** Git Rebase Å\ behind the scenes.
-LetÅfs take 2 branches for example:
+** Git Rebase ¬Å\ behind the scenes.
+Let¬Åfs take 2 branches for example:
 
 - Branch *you*: the branch you are rebasing
 - Branch *johnny*: the branch from which you get the new commits
@@ -38,7 +38,97 @@ git rebase --onto master update_2_6 dev-guo-spi
 
 =dev-guo-spi= branch is branched off from (based on) =update_2_6=
 
-but now I want to add the changes of  =dev-guo-spi= to =master= branch, eg, the new base is =master=
+but now I want to add the changes of  =dev-guo-spi= based on =master= branch, eg, the new base is =master=,
+
+after exectuting the above command:
+
+and check the git status:
+
+#+BEGIN_SRC shell
+$ git status
+On branch dev-guo-spi
+Your branch and 'origin/dev-guo-spi' have diverged,
+and have 22 and 24 different commits each, respectively.
+  (use "git pull" to merge the remote branch into yours)
+nothing to commit, working tree clean
+#+END_SRC
+
+this means, the branch =dev-guo-spi= is already change the base to master, and replay the changes of =dev-guo-spi= since clone
+from =update_2_6= on top of master branch in local. and the remote branch =origin/dev-guo-spi= is still based on =update_2_6= branch.
+
+show the log after =git rebase --onto <new base> <old base> <branche made some commits that base on old base>=
+
+#+BEGIN_SRC shell
+$ git log --graph --pretty=oneline --abbrev-commit --decorate
+* f9d095a (HEAD -> dev-guo-spi) test to not shift the sending data<<-- changes replayed(U)
+* e45ccb9 change the clock as Schimitt Input<<-- changes replayed(T)
+* 70fa85b change the port for channel 1 to port 15<<-- changes replayed(S)
+* 60d4a25 test<<-- changes replayed(R)
+* eac88f9 Pchange to slave mode<<-- changes replayed(Q)
+* a0d37ee changing port to E<<-- changes replayed(P)
+* d627af6 test<<-- changes replayed(O)
+* 7894c7b test<<-- changes replayed(N)
+* b81c2b3 test<<-- changes replayed(M)
+* dfa2ed6 Add and try to add tcc-spi to msc from tcc_spi.c<<-- changes replayed(L)
+* 5b84715 adding the gpsb peripheral set<<-- changes replayed(K)
+* b2a57c8 config spi pin for N_TO_M_REQ<<-- changes replayed(J)
+* 03223b7 change gpio for normal_boot (for normal boot or quick boot)<<-- changes replayed(I)
+* 483fcb0 add CONFIG_USE_NEW_MAIN_IF<<-- changes replayed(H)
+* 74ef03d adding debug message for new interface<<-- changes replayed(G)
+* c959c3a Modify gpio port for spi (requst, data, ready and clock pin)<<-- changes replayed(F)
+* daaca91 add msc_main_com in bootstrap2 in main.c to try to send and rcv spi info<<-- changes replayed(E)
+* 557a750 comment some undefined function, change SDMMC_ms_delay to mdelay <<-- changes replayed(D)
+* 1919471 add some definition<<-- changes replayed(C)
+* f46e8a2 remove PCKC<<-- changes replayed(B)
+* f85f76f add spi files and related files<-----------(A)--------------------------> From here above is the changes made to =dev-guo-spi=
+*   50f4c66 (origin/master, origin/HEAD, test, master) Merge branch 'update_2_6' into 'master'<-------->*master*
+|\
+| * 94cf744 update_2_6 : Change GPIO configuration to in order
+| *   ef042a7 Merge branch 'dev-avani' into update_2_6
+| |\
+| | *   d32afaf (origin/dev-avani) Merge branch 'port_DDR_NAND' into dev-avani LCD update
+| | |\
+
+#+END_SRC
+
+from the log, we can see, the changes made to =dev-guo-spi= branch is replayed (rebased) on top of master
+
+#+BEGIN_SRC shell
+$ git log --graph --pretty=oneline --abbrev-commit --decorate
+* 2dbd6d2 (HEAD -> dev-guo-spi, origin/dev-guo-spi) test to not shift the sending data  <<-- changes made(U)
+* f959cae change the clock as Schimitt Input  <<-- changes made(T)
+* 1ac2b16 change the port for channel 1 to port 15  <<-- changes made(S)
+* 5217241 test  <<-- changes made(R)
+* 227e381 Pchange to slave mode  <<-- changes made(Q)
+* fc39752 changing port to E  <<-- changes made(P)
+* 34ef826 test  <<-- changes made(O)
+* f650e13 test  <<-- changes made(N)
+*   b1e930d Merge branch 'update_2_6' of 10.230.4.125:jkts/platform/chilicrab/bsp/lk-dt into dev-guo-spi
+|\
+| *   1a56bde (origin/update_2_6) Merge branch 'port_LCD' into update_2_6
+| |\
+| | * 415e6b4 (origin/port_LCD) port_LCD : update pwm and lcd at070tn93 driver
+* | | 7d37be1 test <<-- changes made(M)
+* | | f2bc17f Add and try to add tcc-spi to msc from tcc_spi.c <<-- changes made(L)
+* | | f75f9a9 adding the gpsb peripheral set <<-- changes made(K)
+* | | 51141e8 config spi pin for N_TO_M_REQ <<-- changes made(J)
+* | | de8ec76 change gpio for normal_boot (for normal boot or quick boot) <<-- changes made(I)
+* | | 0a014e2 add CONFIG_USE_NEW_MAIN_IF <<-- changes made(H)
+* | | d145b23 adding debug message for new interface <<-- changes made(G)
+* | | e26e197 Modify gpio port for spi (requst, data, ready and clock pin) <<-- changes made(F)
+* | | 5c1480f add msc_main_com in bootstrap2 in main.c to try to send and rcv spi info <<-- changes made(E)
+* | | 90eb507 comment some undefined function, change SDMMC_ms_delay to mdelay <<-- changes made(D)
+* | | 0a96dc2 add some definition <<-- changes made(C)
+* | | d6a7184 remove PCKC <<-- changes made(B)
+* | | 5a5a1d0 add spi files and related files  <<-- changes made(A)
+|/ /
+* | 94cf744 update_2_6 : Change GPIO configuration to in order -----------> *dev-guo-spi is cloned from here*
+* |   ef042a7 Merge branch 'dev-avani' into update_2_6
+|\ \
+| * \   d32afaf (origin/dev-avani) Merge branch 'port_DDR_NAND' into dev-avani LCD update
+
+#+END_SRC
+
 
 *** Explain
 The command line argument --onto can be passed to git rebase. When in git rebase --onto mode the command expands to:
@@ -50,7 +140,7 @@ The command line argument --onto can be passed to git rebase. When in git rebase
 
 
 The --onto command enables a more powerful form or rebase that allows passing specific refs to be the tips of a rebase.
-LetÅfs say we have an example repo with branches like:
+Let¬Åfs say we have an example repo with branches like:
 
 #+BEGIN_SRC shell
 o---o---o---o---o master
