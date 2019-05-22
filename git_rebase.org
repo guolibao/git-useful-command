@@ -1,0 +1,77 @@
+#+TITLE: git rebase
+** Git Rebase Å\ behind the scenes.
+LetÅfs take 2 branches for example:
+
+- Branch *you*: the branch you are rebasing
+- Branch *johnny*: the branch from which you get the new commits
+
+Johnny made some commits and you want to pull those into you branch while keeping the commits and history clean. To do so:
+
+#+BEGIN_SRC shell
+git checkout you
+git rebase johnny
+#+END_SRC
+[[file:img/git-rebase.jpg]]
+
+When you rebase *you* on *johnny*, git creates a temporary branch that is a copy of branch *johnny*, 
+and tries to apply the new commits of *you* on it one by one.
+
+For each commit to apply, if there are conflicts, they will be resolved inside of the commit.
+
+After a rebase, the new commits from *you* (in blue) are not exactly the same as they were:
+
+- If there were conflicts, those conflicts are integrated in each commit
+
+- They have a new hash
+
+But they keep their original date which might be confusing since in the final branch, 
+commits in blue were created before the two last commits in purple.
+
+** Advanced rebase application
+*** example
+for example(my own example):
+#+BEGIN_SRC shell
+git rebase --onto master update_2_6 dev-guo-spi
+#+END_SRC
+
+=dev-guo-spi= is the branch currently I'm working, 
+
+=dev-guo-spi= branch is branched off from (based on) =update_2_6=
+
+but now I want to add the changes of  =dev-guo-spi= to =master= branch, eg, the new base is =master=
+
+*** Explain
+The command line argument --onto can be passed to git rebase. When in git rebase --onto mode the command expands to:
+
+#+BEGIN_SRC shell
+ git rebase --onto <newbase> <oldbase> <current-working-branch-based-on-oldbase-with-some-commits-added>
+#+END_SRC
+
+
+
+The --onto command enables a more powerful form or rebase that allows passing specific refs to be the tips of a rebase.
+LetÅfs say we have an example repo with branches like:
+
+#+BEGIN_SRC shell
+o---o---o---o---o master
+\
+o---o---o---o---o featureA
+\
+o---o---o featureB
+#+END_SRC
+featureB is based on featureA, however, we realize featureB is not dependent on any of the changes in featureA and could just be branched off master.
+
+#+BEGIN_SRC shell
+ git rebase --onto master featureA featureB
+#+END_SRC
+
+featureA is the <oldbase>. master becomes the <newbase> and featureB is reference for what HEAD of the <newbase> will point to. The results are then:
+
+#+BEGIN_SRC shell
+o---o---o featureB
+/
+o---o---o---o---o master
+\
+o---o---o---o---o featureA
+#+END_SRC
+
