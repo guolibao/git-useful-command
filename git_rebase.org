@@ -140,7 +140,7 @@ The command line argument --onto can be passed to git rebase. When in git rebase
 
 
 The --onto command enables a more powerful form or rebase that allows passing specific refs to be the tips of a rebase.
-Letfs say we have an example repo with branches like:
+Let's say we have an example repo with branches like:
 
 #+BEGIN_SRC shell
 o---o---o---o---o master
@@ -163,5 +163,102 @@ o---o---o featureB
 o---o---o---o---o master
 \
 o---o---o---o---o featureA
+#+END_SRC
+
+** git rebase -i
+
+#+BEGIN_SRC shell
+$ git show-branch --more 4
+[master] Use American spellings
+[master^] Finish my colour haiku
+[master~2] Use color instead of colour
+[master~3] Start my haiku
+#+END_SRC
+
+if I want to exchange the position =[master~2] Use color instead of colour= and  =[master^] Finish my colour haiku=
+
+that is move =[master~2] Use color instead of colour== to the position of =[master^] Finish my colour haiku=,
+and move =[master^] Finish my colour haiku= to the position of =[master~2] Use color instead of colour==.
+
+*Desired order would like this:*
+
+#+BEGIN_SRC shell
+[master] Use American spellings
+[master~2] Use color instead of colour
+[master^] Finish my colour haiku
+[master~3] Start my haiku
+#+END_SRC
+
+*How to achieve this:*
+
+#+BEGIN_SRC shell
+$ git rebase -i master~3
+#+END_SRC
+
+You will be placed in an editor on a file that looks like this:
+
+#+BEGIN_SRC shell
+pick 3d0f83b Use color instead of colour
+pick 799dba3 Finish my colour haiku
+pick b61b041 Use American spellings
+# Rebase a75f74e..b61b041 onto a75f74e
+#
+# Commands:
+# pick = use commit
+# edit = use commit, but stop for amending
+# squash = use commit, but meld into previous commit
+#
+# If you remove a line here THAT COMMIT WILL BE LOST.
+# However, if you remove everything, the rebase will be aborted.
+#
+#+END_SRC
+
+
+At this point, however, you are free to reorder the commits, squash commits together,
+change a commit, or *delete one entirely*. To follow the listed steps, 
+
+*simply reorder the commits in your editor as follows and exit it*:
+
+#+BEGIN_SRC shell
+pick 799dba3 Finish my colour haiku ---> (the oldest commit)
+pick 3d0f83b Use color instead of colour
+squash b61b041 Use American spellings ---> (the latest commit)
+# Rebase a75f74e..b61b041 onto a75f74e
+#
+# Commands:
+# pick = use commit
+# edit = use commit, but stop for amending
+# squash = use commit, but meld into previous commit
+#
+# If you remove a line here THAT COMMIT WILL BE LOST.
+# However, if you remove everything, the rebase will be aborted.
+#
+#+END_SRC
+
+The third commit will be squashed into the immediately preceding commit, and the
+new commit log message template will be formed from the combination of the commits
+being squashed together.
+In this example, the two commit log messages are joined and offered in an editor:
+
+#+BEGIN_SRC shell
+# This is a combination of two commits.
+# The first commits message is:
+Use color instead of colour
+# This is the 2nd commit message:
+Use American spellings
+#+END_SRC
+
+These message can be edited down to just
+#+BEGIN_SRC shell
+Use American spellings
+#+END_SRC
+
+After =git rebse -i=, and check again
+
+#+BEGIN_SRC shell
+$ git show-branch --more=4
+[master] Use American spellings
+[master^] Finish my colour haiku
+[master~2] Start my haiku
 #+END_SRC
 
