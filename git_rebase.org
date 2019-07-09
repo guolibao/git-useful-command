@@ -1,6 +1,6 @@
 #+TITLE: git rebase
-** Git Rebase \ behind the scenes.
-Letfs take 2 branches for example:
+** Git Rebase \ behind the scenes.
+Let's take 2 branches for example:
 
 - Branch *you*: the branch you are rebasing
 - Branch *johnny*: the branch from which you get the new commits
