@@ -75,4 +75,7 @@ If you want to include the 27th in your search, you can either specify the
 27th with the time ({"2006-11-27 23:59"}), or just specify the next day
 ({2006-11-28}).
 
-
+* update to a particular revision in svn
+#+BEGIN_SRC shell
+svn update -r <old revision number>
+#+END_SRC
