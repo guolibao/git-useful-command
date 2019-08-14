@@ -54,6 +54,11 @@ svn merge -r UPREV:LOWREV .
 svn merge -c -REV .
 #+END_SRC
 
+for example:
+#+BEGIN_SRC shell
+svn merge -c -311 .
+#+END_SRC
+
 
 * svn log from a date to Head or from date to date
 #+BEGIN_SRC shell
@@ -78,4 +83,14 @@ If you want to include the 27th in your search, you can either specify the
 * update to a particular revision in svn
 #+BEGIN_SRC shell
 svn update -r <old revision number>
+#+END_SRC
+* List files commited for a revision
+#+BEGIN_SRC shell
+svn log --verbose -r 42
+#+END_SRC
+
+or:
+
+#+BEGIN_SRC shell
+svn log -v -r 42
 #+END_SRC
