@@ -94,3 +94,25 @@ or:
 #+BEGIN_SRC shell
 svn log -v -r 42
 #+END_SRC
+
+* How to view an older version of SVN file
+You can update to an older revision
+#+BEGIN_SRC shell
+svn update -r 666 file
+#+END_SRC
+
+or you can just view the file directly
+#+BEGIN_SRC shell
+svn cat -r 666 file | less
+#+END_SRC
+
+or redirect to a file, so in the working directory, there will be 
+the latest ~file.c~ and the ~file_r666.c~ which is the ~file.c~ in revision ~r666~.
+
+and do the comparation between =file.c= and =file_r666.c= to see what actually, 
+what the revision 667 is actually changed or did.
+
+#+BEGIN_SRC shell
+svn cat -r 666 file.c > file_r666.c
+#+END_SRC
+
