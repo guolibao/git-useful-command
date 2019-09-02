@@ -750,3 +750,19 @@ With ‘-m 1’ we tell git to revert to the first parent of the mergecommit on 
 #+BEGIN_SRC shell
   git log --follow -p -- file
 #+END_SRC
+
+* git checkout from a particular revision
+
+for example if git want to check out from branch =master=,
+
+revision number: 0e8b08b7417faf6812d2fe10c6282f50d1b846fc
+
+into a new branch =dev-guo_usb2=
+
+#+BEGIN_SRC shell
+git checkout master
+
+git checkout -b dev-guo_usb2 0e8b08b7417faf6812d2fe10c6282f50d1b846fc
+#+END_SRC
+
+note the revision number must be the full revision number.
