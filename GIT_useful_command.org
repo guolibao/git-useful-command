@@ -766,3 +766,18 @@ git checkout -b dev-guo_usb2 0e8b08b7417faf6812d2fe10c6282f50d1b846fc
 #+END_SRC
 
 note the revision number must be the full revision number.
+
+
+* git rename a tag
+#+BEGIN_SRC shell
+  git tag new old			# create new at old position
+  git tag -d old
+  git push origin :refs/tags/old
+  git push --tags			# push all the tags including the new tag created
+#+END_SRC
+
+Finally make sure that the other users remove the deleted tag. Please
+tell them (co-workers) to run the following command.
+#+BEGIN_SRC shell
+git pull --prune --tags
+#+END_SRC
